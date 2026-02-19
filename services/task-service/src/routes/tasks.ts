@@ -7,20 +7,38 @@ import { eq } from "drizzle-orm";
 
 export const taskRoutes = new Hono();
 
+const taskStatusSchema = z.enum(["todo", "in_progress", "done"]);
+
+const listTasksQuerySchema = z.object({
+  status: taskStatusSchema.optional(),
+});
+
 const createTaskSchema = z.object({
   title: z.string().min(1).max(255),
   description: z.string().optional(),
 });
 
-const updateTaskSchema = z.object({
-  title: z.string().min(1).max(255).optional(),
-  description: z.string().optional(),
-  status: z.enum(["todo", "in_progress", "done"]).optional(),
-});
+// minProperties: 1 を表現するため refine で最低1フィールドを要求する
+const updateTaskSchema = z
+  .object({
+    title: z.string().min(1).max(255).optional(),
+    description: z.string().nullable().optional(),
+    status: taskStatusSchema.optional(),
+  })
+  .refine(
+    (v) =>
+      v.title !== undefined ||
+      v.description !== undefined ||
+      v.status !== undefined,
+    { message: "At least one field must be provided" },
+  );
 
-taskRoutes.get("/", async (c) => {
-  const allTasks = await db.select().from(tasks);
-  return c.json(allTasks);
+taskRoutes.get("/", zValidator("query", listTasksQuerySchema), async (c) => {
+  const { status } = c.req.valid("query");
+  const result = await (status
+    ? db.select().from(tasks).where(eq(tasks.status, status))
+    : db.select().from(tasks));
+  return c.json(result);
 });
 
 taskRoutes.post("/", zValidator("json", createTaskSchema), async (c) => {
