@@ -9,4 +9,10 @@ export default defineConfig({
       "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      // 開発時に /api リクエストを task-service へ転送する
+      "/api": "http://localhost:3000",
+    },
+  },
 });

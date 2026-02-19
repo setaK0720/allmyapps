@@ -20,6 +20,7 @@ export interface NewTask {
 
 export interface UpdateTask {
   title?: string;
-  description?: string;
+  // null を渡すと説明を削除する（OpenAPI スキーマ準拠）
+  description?: string | null;
   status?: TaskStatus;
 }
