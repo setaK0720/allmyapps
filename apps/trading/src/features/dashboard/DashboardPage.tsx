@@ -6,18 +6,39 @@ type AccountSummary = {
   equity: number;
   todayPl: number;
   activeStrategies: number;
+  currency: string;
 };
 
+function formatAmount(amount: number, currency: string): string {
+  return new Intl.NumberFormat('ja-JP', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: currency === 'JPY' ? 0 : 2,
+  }).format(amount);
+}
+
 export default function DashboardPage() {
-  const [summary, setSummary] = useState<AccountSummary>({ equity: 0, todayPl: 0, activeStrategies: 0 });
+  const [summary, setSummary] = useState<AccountSummary>({ equity: 0, todayPl: 0, activeStrategies: 0, currency: 'JPY' });
   const [positions, setPositions] = useState<Position[]>([]);
 
-  useEffect(() => {
+  const refresh = () => {
     void fetch('/api/positions')
       .then(r => r.json())
       .then((data: unknown) => {
         if (Array.isArray(data)) setPositions(data as Position[]);
       });
+    void fetch('/api/account')
+      .then(r => r.json())
+      .then((data: unknown) => {
+        const d = data as { equity: number; activeStrategies: number; currency: string };
+        setSummary(prev => ({ ...prev, equity: d.equity, activeStrategies: d.activeStrategies, currency: d.currency }));
+      });
+  };
+
+  useEffect(() => {
+    refresh();
+    const timer = setInterval(refresh, 3000);
+    return () => clearInterval(timer);
   }, []);
 
   useStream((event: StreamEvent) => {
@@ -50,12 +71,12 @@ export default function DashboardPage() {
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-gray-900 rounded-lg border border-gray-800 p-4">
           <p className="text-sm text-gray-400">口座残高（直近）</p>
-          <p className="text-2xl font-bold mt-1">${summary.equity.toFixed(2)}</p>
+          <p className="text-2xl font-bold mt-1">{formatAmount(summary.equity, summary.currency)}</p>
         </div>
         <div className="bg-gray-900 rounded-lg border border-gray-800 p-4">
           <p className="text-sm text-gray-400">本日確定 P&L</p>
           <p className={`text-2xl font-bold mt-1 ${summary.todayPl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {summary.todayPl >= 0 ? '+' : ''}${summary.todayPl.toFixed(2)}
+            {summary.todayPl >= 0 ? '+' : ''}{formatAmount(summary.todayPl, summary.currency)}
           </p>
         </div>
         <div className="bg-gray-900 rounded-lg border border-gray-800 p-4">
@@ -70,7 +91,7 @@ export default function DashboardPage() {
           <span className="text-sm text-gray-400">
             含み損益合計:{' '}
             <span className={totalUnrealizedPl >= 0 ? 'text-green-400' : 'text-red-400'}>
-              {totalUnrealizedPl >= 0 ? '+' : ''}${totalUnrealizedPl.toFixed(2)}
+              {totalUnrealizedPl >= 0 ? '+' : ''}{formatAmount(totalUnrealizedPl, summary.currency)}
             </span>
           </span>
         </div>
@@ -99,7 +120,7 @@ export default function DashboardPage() {
                   </td>
                   <td className="px-4 py-2">{p.lot}</td>
                   <td className={`px-4 py-2 ${parseFloat(p.unrealizedPl) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    {parseFloat(p.unrealizedPl) >= 0 ? '+' : ''}${p.unrealizedPl}
+                    {parseFloat(p.unrealizedPl) >= 0 ? '+' : ''}{formatAmount(parseFloat(p.unrealizedPl), summary.currency)}
                   </td>
                 </tr>
               ))}

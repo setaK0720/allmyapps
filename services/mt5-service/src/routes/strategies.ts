@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { eq } from 'drizzle-orm';
-import { db, strategyConfigs } from '../db/index';
+import { db, strategyConfigs, positions, trades } from '../db/index';
 import { callEngineApi } from '../engine-client';
 
 export const strategiesRouter = new Hono();
@@ -57,6 +57,9 @@ strategiesRouter.patch('/:id', async (c) => {
 
 strategiesRouter.delete('/:id', async (c) => {
   const id = parseInt(c.req.param('id'), 10);
+  // 外部キー制約を解消してから削除
+  await db.delete(positions).where(eq(positions.strategyId, id));
+  await db.update(trades).set({ strategyId: null }).where(eq(trades.strategyId, id));
   const [row] = await db.delete(strategyConfigs)
     .where(eq(strategyConfigs.id, id))
     .returning();

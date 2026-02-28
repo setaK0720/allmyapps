@@ -9,6 +9,8 @@ import { riskRouter } from './routes/risk';
 import { controlRouter } from './routes/control';
 import { tradesRouter } from './routes/trades';
 import { streamRouter } from './routes/stream';
+import { positionsRouter } from './routes/positions';
+import { accountRouter } from './routes/account';
 
 const app = new Hono();
 
@@ -22,6 +24,8 @@ app.route('/api/risk-config', riskRouter);
 app.route('/api/control', controlRouter);
 app.route('/api/trades', tradesRouter);
 app.route('/api/stream', streamRouter);
+app.route('/api/positions', positionsRouter);
+app.route('/api/account', accountRouter);
 
 // Python Engine との接続を開始
 connectToEngine();

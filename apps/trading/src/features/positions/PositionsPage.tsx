@@ -21,13 +21,11 @@ export default function PositionsPage() {
       });
   };
 
-  useEffect(load, []);
-
-  useStream((event: StreamEvent) => {
-    if (event.type === 'order_opened' || event.type === 'order_closed') {
-      load();
-    }
-  });
+  useEffect(() => {
+    load();
+    const timer = setInterval(load, 3000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <div className="space-y-4">

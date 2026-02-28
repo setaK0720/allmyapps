@@ -90,13 +90,30 @@ class ClosePositionRequest(BaseModel):
 @app.get("/status")
 async def get_status() -> dict:
     if _engine is None:
-        return {"running": False, "strategies": [], "equity": 0.0}
+        return {"running": False, "strategies": [], "equity": 0.0, "positions": []}
     account = _engine.mt5.get_account_info()
+    raw_positions = _engine.mt5.get_positions()
+    positions = [
+        {
+            "ticket": p.ticket,
+            "symbol": p.symbol,
+            "order_type": p.order_type,
+            "lot": p.lot,
+            "open_price": p.open_price,
+            "current_price": p.current_price,
+            "unrealized_pl": p.unrealized_pl,
+            "open_time": str(p.open_time),
+            "strategy_id": getattr(p, "strategy_id", None),
+        }
+        for p in raw_positions
+    ]
     return {
         "running": _engine.running,
         "strategies": _engine.runner.get_status(),
         "equity": account.equity if account else 0.0,
         "balance": account.balance if account else 0.0,
+        "currency": account.currency if account else "USD",
+        "positions": positions,
     }
 
 
