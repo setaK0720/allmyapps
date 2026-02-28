@@ -36,5 +36,6 @@ console.log(`mt5-service listening on port ${PORT}`);
 
 export default {
   port: PORT,
+  hostname: '0.0.0.0',
   fetch: app.fetch,
 };

@@ -68,7 +68,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <h1 className="text-xl font-semibold">ダッシュボード</h1>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-gray-900 rounded-lg border border-gray-800 p-4">
           <p className="text-sm text-gray-400">口座残高（直近）</p>
           <p className="text-2xl font-bold mt-1">{formatAmount(summary.equity, summary.currency)}</p>
@@ -98,6 +98,7 @@ export default function DashboardPage() {
         {positions.length === 0 ? (
           <p className="p-4 text-gray-500 text-sm">ポジションなし</p>
         ) : (
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-gray-500 border-b border-gray-800">
@@ -126,6 +127,7 @@ export default function DashboardPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

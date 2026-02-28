@@ -108,6 +108,7 @@ export default function StrategiesPage() {
         {strategies.length === 0 ? (
           <p className="p-4 text-gray-500 text-sm">戦略が登録されていません</p>
         ) : (
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-gray-500 border-b border-gray-800">
@@ -152,6 +153,7 @@ export default function StrategiesPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 
