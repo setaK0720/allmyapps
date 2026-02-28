@@ -1,7 +1,7 @@
 {
   "name": "allmyapps",
   "private": true,
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": ["apps/*", "packages/*", "services/*"],
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
